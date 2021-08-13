@@ -1,0 +1,71 @@
+## 题目链接
+- https://leetcode-cn.com/problems/closest-subsequence-sum/
+
+```c++
+// 状态压缩dp，获取所有可能的子集的和
+// 存储到hash表后，排序
+vector<int> get_sum(vector<int>& arr) {
+  unordered_set<int> s;
+  int n = arr.size();
+  int state = 1 << n;
+  vector<int> sum(state);
+
+  for (int i = 1; i < state; ++i) {
+    for (int j = n-1; j >= 0; --j) {
+      if (i & (1 << j)) {
+        int last = (~(1 << j)) & i;
+        sum[i] = sum[last] + arr[j];
+        s.insert(sum[i]);
+        break;
+      }
+    }
+  }
+
+  vector<int> ans(s.begin(), s.end());
+  sort(ans.begin(), ans.end());
+
+  return ans;
+}
+
+int minAbsDifference(vector<int>& nums, int goal) {
+  // 将数组分为两个
+  int n = nums.size();
+  vector<int> arr1(nums.begin(), nums.begin() + n/2);
+  vector<int> arr2(nums.begin() + n/2, nums.end());
+
+  // 分别获取其子集和的排序值
+  vector<int> suml = get_sum(arr1);
+  vector<int> sumr = get_sum(arr2);
+
+  int ans = abs(goal);
+  for (auto& val : suml) {
+    ans = min(ans, abs(goal - val));
+  }
+
+  for (auto& val : sumr) {
+    ans = min(ans, abs(goal - val));
+  }
+
+  if (ans == 0) return ans;
+
+  // 双指针获取最接近goal的绝对值差
+  int n1 = suml.size();
+  int n2 = sumr.size();
+  int i = 0, j = n2-1;
+
+  while (i < n1 && j >= 0) {
+    int sum = suml[i] + sumr[j];        
+    if (sum == goal) {
+      return 0;
+    } else if (sum < goal) {
+      ++i;
+    } else {
+      --j;
+    }
+
+    ans = min(ans, abs(sum - goal));
+  }
+
+  return ans;
+}
+```
