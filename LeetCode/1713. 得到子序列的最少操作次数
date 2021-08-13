@@ -1,0 +1,44 @@
+## 题目链接
+- https://leetcode-cn.com/problems/minimum-operations-to-make-a-subsequence/
+
+## 方法一
+关键点：
+- 首先，原问题稍微转化一下，即求最长公共子序列x，答案为target.size() - x
+- 求公共子序列一般是动态规划，复杂度为O(N^2)，题中数据范围是10^5，肯定会超时
+- 想到最长上升子序列的贪心算法复杂度是：O(N*log(N))
+  - 题中target是互不相同的元素，如果将其映射从0到n-1的值
+  - 在arr数组中的出现在target中的元素，也做相关的映射，同时去掉其他没有出现在target中的arr元素
+  - 因为映射后，target数组是单调上升的，它和映射后arr数组的最长公共子序列，可以转化为求映射后的arr数组的最长上升子序列
+
+```c++
+int minOperations(vector<int>& target, vector<int>& arr) {
+  vector<int> data;
+  unordered_map<int, int> mp;
+
+  for (int i = 0; i < target.size(); ++i) {
+    mp[target[i]] = i;
+  }
+
+  for (int i = 0; i < arr.size(); ++i) {
+    if (mp.count(arr[i])) {
+      data.push_back(mp[arr[i]]);
+    }
+  }
+
+  int n = data.size();
+  int ans = 0;
+  set<int> s;
+
+  for (int i = 0; i < n; ++i) {
+    int val = data[i];
+    auto it = s.lower_bound(val);
+    if (it != s.end()) {
+      s.erase(*it);
+    }
+
+    s.insert(val);
+  }
+
+  return target.size() - s.size();
+}
+```
