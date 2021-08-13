@@ -1,0 +1,65 @@
+## 题目链接
+- https://leetcode-cn.com/problems/number-of-different-subsequences-gcds/
+
+## 方法一
+关键点：
+- 约数范围在[1 ~ max_val]之间，max_val表示数组最大值
+- 所以可能的约数为：arr中每个数的所有约数组成的集合
+- 判断一个数x是否为子序列的最大公约数：
+  - arr中x的倍数之间求最大公约数才可能产生最大公约数为x
+  - 因为要求x是子序列的最大的公约数，参与计算的倍数越多，x才越可能成为最大公约数，那么就计算所有x的倍数的最大公约数，如果结果等于x，则答案加一
+步骤：
+- 遍历数组中每一个数x
+- 求x的所有约数y
+- 对于每个y，用它作为key，查看hash表中是否已经存在它的倍数
+  - 如果存在，则用其值和x求gcd
+  - 如果不存在，则将其存储在hash表中，即hash[y] = x
+- 遍历hash表，如果hash[y] = y则答案加一
+
+## 方法二
+
+```c++
+int countDifferentSubsequenceGCDs(vector<int>& nums) {
+  int n = nums.size();
+  int ans = 0;
+  unordered_map<int, int> time;
+  unordered_set<int> s;
+
+  for (auto& val : nums) {
+    s.insert(val);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    int val = nums[i];
+    for (int j = 1; j <= val / j; ++j) {
+      if (val % j) continue;
+      if (s.count(j) == 0) {
+        if (time.count(j) == 0) {
+          time[j] = val;
+        } else {
+          time[j] = gcd(time[j], val);
+        }
+      } 
+
+      int b = val / j;
+      if (j != b) {
+        if (s.count(b) == 0) {
+          if (time.count(b) == 0) {
+            time[b] = val;
+          } else {
+            time[b] = gcd(time[b], val);
+          }
+        } 
+      }
+    } 
+  }
+
+  for (auto& val : time) {
+    if (val.first == val.second) {
+      ++ans;
+    }
+  }
+
+  return ans + s.size();
+}
+```
