@@ -1,0 +1,69 @@
+## 题目链接
+- https://leetcode-cn.com/problems/minimize-hamming-distance-after-swap-operations/
+
+## 方法一
+关键点
+- 并查集（维护连通块的元素集合）
+- 求两个数组的交集
+
+```c++
+int n;
+vector<int> p;
+unordered_map<int, unordered_set<int>> s;
+
+int find(int x) {
+  if (p[x] != x) {
+    p[x] = find(p[x]);
+  }
+
+  return p[x];
+}
+
+int minimumHammingDistance(vector<int>& source, vector<int>& target, vector<vector<int>>& allowedSwaps) {
+  int ans = 0;
+
+  // 并查集初始化
+  n = source.size();
+  p.resize(n);
+  for (int i = 0; i < n; ++i) {
+    p[i] = i;
+    s[i].insert(i);
+  }
+
+  // 维护连通块的元素合并
+  for (auto& val : allowedSwaps) {
+    int v1 = val[0];
+    int v2 = val[1];
+    int p1 = find(v1);
+    int p2 = find(v2);
+    if (p1 != p2) {
+      p[p1] = p2;
+
+      s[p2].insert(s[p1].begin(), s[p1].end());
+      s.erase(p1);
+    }
+  }
+
+  for (int i = 0; i < n; ++i) {
+    // 找到连通块的祖父节点
+    if (i == p[i]) {
+      unordered_map<int, int> cnt1, cnt2;
+      for (auto& val : s[i]) {
+        cnt1[source[val]]++;
+        cnt2[target[val]]++;
+      }
+
+      // 求两个数组对应下标元素的交集
+      for (auto& val : cnt1) {
+        int key = val.first;
+        int cnt = val.second;
+        if (cnt2.count(key)) {
+          ans += min(cnt, cnt2[key]);
+        }
+      }
+    }
+  }
+
+  return n - ans;
+}
+```
