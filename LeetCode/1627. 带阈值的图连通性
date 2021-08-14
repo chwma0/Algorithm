@@ -1,0 +1,45 @@
+## 题目链接
+- https://leetcode-cn.com/problems/graph-connectivity-with-threshold/
+
+## 方法一
+关键点
+- 并查集，记录点之间的连通性
+- 约数的所有倍数对应的点之间是连通的
+  - 遍历大于threshold的数
+  - 对于每个数来说，找到所有小于等于n的倍数，加入到并查集
+  - 遍历每个数的倍数的复杂度 n/1 + n/2 + ... + n/n = n(1/1 + 1/2 + ... + 1/n)，括号内为著名的调和级数，它的渐进复杂度为log(n)，所以整体复杂度是n*log(n)
+
+```c++
+vector<int> p;
+
+int find(int x) {
+  if (p[x] != x) {
+    p[x] = find(p[x]);
+  } 
+
+  return p[x];
+}
+
+vector<bool> areConnected(int n, int threshold, vector<vector<int>>& queries) {
+  p.resize(n+1);
+  for (int i = 1; i <= n; ++i) {
+    p[i] = i;
+  }
+
+  for (int i = threshold+1; i <= n; ++i) {
+    for (int j = i; j <= n; j += i) {
+      if (find(i) != find(j)) {
+        p[find(i)] = find(j);
+      }
+    }
+  }
+
+  vector<bool> ans;
+  for (auto& q : queries) {
+    int n1 = q[0], n2 = q[1];
+    ans.push_back(find(n1) == find(n2));
+  }
+
+  return ans;
+}
+```
