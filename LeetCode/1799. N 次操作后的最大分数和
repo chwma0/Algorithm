@@ -1,0 +1,48 @@
+
+## 题目链接
+- https://leetcode-cn.com/problems/maximize-score-after-n-operations/
+
+## 方法一
+关键点
+- 基于集合的状态压缩dp
+  - 当前状态state从前一个状态转移而来
+  - 前一个状态prev和state的关系：state二进制为1的任意两个位置为0，其他不变，对应的就是所有prev
+  - state的子状态最多为n(n-1) n表示state中二进制最高位为1对应的索引加一
+- 递推计算或者dfs都可以，这里采用了记忆化dfs
+
+```c++
+unordered_map<int, int> memo;
+
+int dfs(int state, int level, vector<int>& nums) {
+  if (state == 0) {
+    return 0;
+  }
+
+  if (memo.count(state)) {
+    return memo[state];
+  }
+
+  int n = nums.size();
+  int ans = 0;
+
+  // 遍历当前state的所有前一个状态，如果某个位置为0则调过
+  for (int i = 0; i < n; ++i) {
+    if ((state & (1 << i)) == 0) continue;
+
+    for (int j = i+1; j < n; ++j) {
+      if ((state & (1 << j)) == 0) continue;
+
+      int new_state = state & (~(1<<i)) & (~(1<<j));
+      ans = max(ans, level * gcd(nums[i], nums[j]) + dfs(new_state, level+1, nums));
+    }
+  }
+
+  memo[state] = ans;
+  return ans;
+}
+
+int maxScore(vector<int>& nums) {
+  int n = nums.size();
+  return dfs((1 << n) - 1, 1, nums);
+}
+```
